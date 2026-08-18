@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { createClient } from '@supabase/supabase-js';
+import { revalidateTag, revalidatePath } from 'next/cache';
 
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -11,23 +12,53 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 
+// Helper: Generates a clean, unique slug from product name
+async function generateUniqueSlug(db, name, currentProductId = null) {
+  let baseSlug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')         // Replace spaces with hyphens
+    .replace(/-+/g, '-');         // Avoid multiple hyphens
 
+  if (!baseSlug) baseSlug = 'product';
+
+  let slug = baseSlug;
+  let counter = 1;
+
+  // Check MongoDB for existing slug collisions
+  while (true) {
+    const filter = { slug };
+    if (currentProductId) {
+      filter.product_id = { $ne: currentProductId };
+    }
+
+    const existing = await db.collection('products').findOne(filter, { projection: { _id: 1 } });
+    if (!existing) break; // Slug is unique!
+
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  return slug;
+}
 
 export async function publishSingleProductAction(product) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
+    const { db } = await connectToDatabase(); // Connect early to generate slug
     const uploadedImageUrls = [];
-    const sanitizedName = product.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     const imageData = product.image_data || [];
 
-    // 1. Process & Upload each Base64 image to Supabase Bucket (using Admin client)
+    // 1. Generate unique slug
+    const slug = await generateUniqueSlug(db, product.name, product.product_id);
+
+    // 2. Process & Upload each Base64 image to Supabase Bucket
     for (let i = 0; i < imageData.length; i++) {
       const base64Data = imageData[i];
       const cleanProductName = product.name.replace(/[^a-zA-Z0-9 -]/g, '').trim();
-
       const fileName = `${cleanProductName} ${i + 1}.jpg`;
 
-      // Convert Base64 string to Buffer
       const base64Image = base64Data.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Image, 'base64');
 
@@ -47,10 +78,11 @@ export async function publishSingleProductAction(product) {
       uploadedImageUrls.push(publicUrlData.publicUrl);
     }
 
-    // 2. Prepare database payload replacing image_data with uploaded URLs
+    // 3. Prepare database payload including slug
     const productPayload = {
       product_id: product.product_id,
       name: product.name,
+      slug: slug, // <-- Added slug field
       description: product.description || "",
       price: Number(product.price),
       category: product.category || "",
@@ -64,9 +96,13 @@ export async function publishSingleProductAction(product) {
       createdAt: new Date()
     };
 
-    // 3. Save to MongoDB
-    const { db } = await connectToDatabase();
+    // 4. Save to MongoDB
     await db.collection('products').insertOne(productPayload);
+
+    // 5. Trigger Cache Revalidation for Storefront Pages
+    revalidateTag('products');
+    revalidatePath('/');
+    revalidatePath('/products');
 
     return { success: true };
   } catch (error) {
@@ -74,6 +110,8 @@ export async function publishSingleProductAction(product) {
     return { success: false, error: error.message };
   }
 }
+
+
 
 export async function getAllProductsAction() {
   try {
@@ -83,7 +121,8 @@ export async function getAllProductsAction() {
     return products.map(p => ({
       ...p,
       _id: p._id.toString(),
-      id: p._id.toString(), // normalize id reference
+      id: p._id.toString(),
+      slug: p.slug || '', // <-- Ensure slug is exposed
       colors: p.colors || [],
       sizes: p.sizes || [],
       product_type: p.product_type || [],
@@ -103,18 +142,20 @@ export async function updateProductBatchAction(modifiedProducts) {
       const cleanName = product.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
       const updatedImageUrls = [];
 
-      // Process images (Upload new Base64 strings, keep existing Supabase URLs)
+      // Generate/Update unique slug for modified product name
+      const slug = await generateUniqueSlug(db, product.name, product.product_id);
+
+      // Process images
       for (let i = 0; i < product.images.length; i++) {
         const img = product.images[i];
 
         if (img.startsWith('data:image')) {
-          // New Base64 Image -> Upload to Supabase Storage
           const base64Data = img.replace(/^data:image\/\w+;base64,/, '');
           const buffer = Buffer.from(base64Data, 'base64');
           const fileName = `public/${cleanName}_${i + 1}_${Date.now()}.jpg`;
 
           const { error } = await supabase.storage
-            .from('products') // Your Supabase bucket name
+            .from('products')
             .upload(fileName, buffer, {
               contentType: 'image/jpeg',
               upsert: true
@@ -130,7 +171,6 @@ export async function updateProductBatchAction(modifiedProducts) {
 
           updatedImageUrls.push(publicUrlData.publicUrl);
         } else {
-          // Existing Supabase URL -> Retain directly
           updatedImageUrls.push(img);
         }
       }
@@ -141,6 +181,7 @@ export async function updateProductBatchAction(modifiedProducts) {
       await db.collection('products').updateOne(filter, {
         $set: {
           name: product.name,
+          slug: slug, // <-- Added slug field update
           description: product.description,
           price: Number(product.price),
           category: product.category,
@@ -156,9 +197,76 @@ export async function updateProductBatchAction(modifiedProducts) {
       });
     }
 
+    // Trigger Cache Revalidation for Storefront Pages
+    revalidateTag('products');
+    revalidatePath('/');
+    revalidatePath('/products');
+
     return { success: true, message: 'Products updated successfully!' };
   } catch (error) {
     console.error('updateProductBatchAction Error:', error);
     return { success: false, error: error.message };
+  }
+}
+
+
+
+export async function deleteProductAction(productId) {
+  try {
+    const { db } = await connectToDatabase();
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const filter = ObjectId.isValid(productId)
+      ? { _id: new ObjectId(productId) }
+      : { product_id: productId };
+
+    const product = await db.collection('products').findOne(filter);
+
+    if (!product) {
+      return { success: false, error: 'Product not found.' };
+    }
+
+    // Storage cleanup logic
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      const filesToDelete = product.images
+        .map((url) => {
+          try {
+            const parsedUrl = new URL(url);
+            const marker = '/storage/v1/object/public/products/';
+            const index = parsedUrl.pathname.indexOf(marker);
+            if (index !== -1) {
+              return parsedUrl.pathname.substring(index + marker.length);
+            }
+            const parts = parsedUrl.pathname.split('/products/');
+            return parts.length > 1 ? parts.slice(1).join('/products/') : null;
+          } catch (err) {
+            return null;
+          }
+        })
+        .filter(Boolean);
+
+      if (filesToDelete.length > 0) {
+        const { error: storageError } = await supabaseAdmin.storage
+          .from('products')
+          .remove(filesToDelete);
+
+        if (storageError) {
+          console.warn('Supabase storage cleanup warning:', storageError.message);
+        }
+      }
+    }
+
+    // Delete product document from MongoDB
+    await db.collection('products').deleteOne(filter);
+
+    // Trigger Cache Revalidation after deletion
+    revalidateTag('products');
+    revalidatePath('/');
+    revalidatePath('/products');
+
+    return { success: true, message: 'Product deleted successfully!' };
+  } catch (error) {
+    console.error('deleteProductAction Error:', error);
+    return { success: false, error: error.message || 'Failed to delete product.' };
   }
 }

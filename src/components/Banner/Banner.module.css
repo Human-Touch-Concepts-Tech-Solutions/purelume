@@ -1,0 +1,155 @@
+/* src/components/Banner/Banner.module.css */
+
+.bannerWrapper {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  overflow: hidden;
+  background: #1a202c;
+  color: #ffffff;
+  padding: 0;
+}
+
+/* Mobile: < 640px (800 x 500 px -> 16:10 / 8:5 ratio) */
+.aspectContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 800 / 500;
+}
+
+/* Tablet: 640px – 1023px (1200 x 525 px -> 16:7 ratio) */
+@media (min-width: 640px) {
+  .aspectContainer {
+    aspect-ratio: 1200 / 525;
+  }
+}
+
+/* Desktop: ≥ 1024px (1920 x 600 px -> 16:5 ratio) */
+@media (min-width: 1024px) {
+  .aspectContainer {
+    aspect-ratio: 1920 / 600;
+  }
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.picture {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bannerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(15, 23, 42, 0.75) 0%,
+    rgba(15, 23, 42, 0.35) 50%,
+    rgba(15, 23, 42, 0.1) 100%
+  );
+  z-index: 2;
+}
+
+.contentContainer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.textContent {
+  max-width: 600px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 2.25rem;
+    margin-bottom: 12px;
+  }
+  .subtitle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: 2.75rem;
+  }
+}
+
+.indicators {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.activeDot {
+  background-color: #ffffff;
+  transform: scale(1.2);
+}
+
+/* src/components/Banner/Banner.module.css */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  /* Softened gradient overlay so your slide background shows through clearly */
+  background: linear-gradient(
+    to right,
+    rgba(15, 23, 42, 0.5) 0%,
+    rgba(15, 23, 42, 0.2) 50%,
+    rgba(15, 23, 42, 0) 100%
+  );
+  z-index: 2;
+}

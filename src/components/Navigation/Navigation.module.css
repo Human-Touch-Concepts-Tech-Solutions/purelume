@@ -1,0 +1,308 @@
+/* Navigation.module.css */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f1f1;
+  transition: all 0.3s ease;
+  padding: 16px 0;
+}
+
+.headerScrolled {
+  padding: 12px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.navWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand Logo */
+
+.logoIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #fff1f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e11d48;
+}
+
+.logoText {
+  font-family: serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Desktop Links */
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 1024px) {
+  .desktopNav {
+    display: none;
+  }
+}
+
+.navLink {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.navLink:hover {
+  color: #e11d48;
+  background-color: #f9fafb;
+}
+
+.dropdownTrigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.dropdownTrigger:hover {
+  color: #e11d48;
+  background-color: #f9fafb;
+}
+
+.dropdownContainer {
+  position: relative;
+}
+
+/* Mega Menu Dropdowns */
+.megaMenuFavours {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 100%;
+  padding-top: 8px;
+  width: 640px;
+}
+
+.megaMenuPreservation {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  padding-top: 8px;
+  width: 300px;
+}
+
+.dropdownContent {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f3f4f6;
+  padding: 16px;
+}
+
+.favoursGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.preservationList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.subItem:hover {
+  background-color: #fff1f2;
+}
+
+.subItemIcon {
+  padding: 6px;
+  border-radius: 6px;
+  background-color: #f9fafb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.subItemTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.subItemDesc {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+/* Actions Section */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconBtn {
+  position: relative;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #4b5563;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.iconBtn:hover {
+  color: #e11d48;
+  background-color: #f3f4f6;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #e11d48;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileToggle {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .mobileToggle {
+    display: flex;
+  }
+}
+
+/* Mobile Drawer */
+.mobileMenu {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.mobileContent {
+  padding: 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.mobileLink {
+  display: block;
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1f2937;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.mobileAccordionTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1f2937;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mobileSubList {
+  padding: 8px 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+.mobileSubItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 0.875rem;
+  color: #4b5563;
+  text-decoration: none;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  max-width: 150px; /* Adjust width as needed for your logo's aspect ratio */
+}
+/* .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+} */
+
+
+.logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
