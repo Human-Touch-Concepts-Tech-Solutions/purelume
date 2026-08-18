@@ -24,7 +24,7 @@ import {
 export const favoursItems = [
   {
     title: 'Wedding Favors',
-    desc: 'Custom keepsakes for guests',
+    desc: 'Custom keepsakes',
     href: '/categories/Bracelets',
     icon: Gem
   },
