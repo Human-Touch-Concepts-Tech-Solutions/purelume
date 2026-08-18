@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:worker": "opennextjs-cloudflare",
+    "deploy": "npm run build:worker && wrangler deploy"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
@@ -23,6 +25,7 @@
     "styled-components": "^6.5.2"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.2",
     "autoprefixer": "^10.5.4",
     "babel-plugin-react-compiler": "1.0.0",
     "babel-plugin-styled-components": "^2.3.0",

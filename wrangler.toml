@@ -1,6 +1,8 @@
 name = "purelume"
+main = ".open-next/worker.js"
 compatibility_date = "2026-08-18"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
-directory = ".next"
+directory = ".open-next/assets"
+binding = "ASSETS"
